@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block start %}
+
+<a href="/about">about</a>
+<a href="/contact">contact</a>
+
+<h1>Heading</h1>
+<p>
+  Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure debitis optio
+  iusto eius nobis obcaecati beatae ipsum est molestiae, repudiandae esse
+  aliquam eos atque commodi delectus cumque asperiores aliquid vel!
+</p>
+{{people}}
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for person in people %}
+    <tr>
+      <td>{{forloop.counter}}</td>
+      <td>{{person.name}}</td>
+      <td>{{person.age}}</td>
+      <td>{{person.address}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<button>Submit</button>
+
+
+{% endblock %}
