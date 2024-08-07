@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from .models import CustomUser  # Import the custom user model
+
 # Create your views here.
 
 def home(request):
@@ -49,35 +52,61 @@ def contact(request):
     context={'page': 'Contact'}
     return render(request, 'main/contact.html', context)
   
-def login(request):
+def login_page(request):
     context={'page': 'Login'}
+    if request.method == "POST":
+      email = request.POST.get('email')
+      password = request.POST.get('password')
+            
+      if CustomUser.objects.filter(email = email).exists():
+        messages.error(request, "User is not recognized! ")
+        return redirect('/login/')
+      
+      user = authenticate(request,  email=email, password = password)
+      
+      if user is None: 
+        messages.error(request, "invalid email or password!")
+        return redirect('/login/')
+
+      else: 
+        login(request, user)
+        return redirect('/recipes/')
+      
+      
     return render(request, 'auth/login.html', context)
   
     
 def register(request):
-  if request.method == "POST":
-    first_name = request.POST.get('first_name')
-    last_name = request.POST.get('last_name')
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    
-    user = User.objects.filter(username = username)
+    context={'page': 'Register'}
+    if request.method == "POST":
+      first_name = request.POST.get('first_name')
+      last_name = request.POST.get('last_name')
+      email = request.POST.get('email')
+      password = request.POST.get('password')
+      confirm_password = request.POST.get('confirm_password')
+      
+      user = User.objects.filter(email = email)
+      
+      if password != confirm_password:
+        messages.error(request, "Passwords do not match.")
+        return redirect('/register/')
 
-    if user.exists():
-      messages.warning(request, "User already exits!. ")
+      if user.exists():
+        messages.warning(request, "User already exits!. ")
+        return redirect('/register/')
+      
+      user = User.objects.create(
+        first_name = first_name,
+        last_name = last_name,
+        email=email,
+        username = email,
+        )
+      
+      user.set_password(password)
+      user.save()
+      
+      messages.success(request, "User created Successfull!")
+      
       return redirect('/register/')
-    
-    user = User.objects.create(
-      first_name = first_name,
-      last_name = last_name,
-      username = username,
-      )
-    
-    user.set_password(password)
-    user.save()
-    
-    messages.success(request, "User created Successfull!")
-    
-    return redirect('/register/')
 
-  return render(request, 'auth/register.html')
+    return render(request, 'auth/register.html', context)
